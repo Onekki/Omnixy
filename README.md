@@ -16,7 +16,7 @@ Omnixy 是一套以 NixOS 为底座、以 Denial 为桌面、以 Flutter 原生�
 - NixOS 提供声明式配置和原子回滚，系统状态可以完全由 flake 复现。
 - Denial 提供原生 Flutter 桌面体验，配置界面可以做成 Denial 里的原生应用，不需浏览器。
 - 模块化而不是全量捆绑：核心保持精简，功能模块按需启用。
-- 直接 flake 工作流：`config/omnixy.nix` 和 `hosts/omnixy/hardware-configuration.nix` 都提交到 git，所以 `nixos-rebuild --flake` 可以直接运行，不依赖额外脚本。
+- 直接 flake 工作流：`config/omnixy.nix` 提交到 git；`hardware-configuration.nix` 按机器生成并忽略，构建时用 `path:` 引用当前工作区，无需额外脚本。
 
 ## 怎么做
 
@@ -31,14 +31,14 @@ git clone https://github.com/Onekki/Omnixy.git
 cd Omnixy
 ```
 
-### 3. 生成并提交硬件配置
+### 3. 生成硬件配置
 
 ```bash
 sudo nixos-generate-config
 cp /etc/nixos/hardware-configuration.nix hosts/omnixy/hardware-configuration.nix
-git add hosts/omnixy/hardware-configuration.nix
-git commit -m "Add hardware configuration"
 ```
+
+`hosts/omnixy/hardware-configuration.nix` 被 `.gitignore` 忽略，不入库。因为它未跟踪，git flake 的 `.#omnixy` 看不到它，构建要用 `path:` 引用工作区：
 
 ### 4. 调整默认配置
 
@@ -81,13 +81,13 @@ git commit -m "Add hardware configuration"
 
 ```bash
 sudo NIX_CONFIG="experimental-features = nix-command flakes" \
-  nixos-rebuild switch --flake .#omnixy
+  nixos-rebuild switch --flake "path:$PWD#omnixy"
 ```
 
 系统已经配置好后，直接：
 
 ```bash
-sudo nixos-rebuild switch --flake .#omnixy
+sudo nixos-rebuild switch --flake "path:$PWD#omnixy"
 ```
 
 ### 6. 重启登录
@@ -99,4 +99,4 @@ sudo nixos-rebuild switch --flake .#omnixy
 - 改系统/用户/模块开关：编辑 `config/omnixy.nix` 或使用 Denial 原生 dashboard；
 - 添加模块：写 `modules/<id>.nix` + `modules/<id>.meta.nix`，shell 会自动发现；
 - 搜索 nixpkgs/flake：在 dashboard 里搜索并生成 `pkg-<名称>` / `flake-<名称>` 模块；
-- 每次修改后执行 `sudo nixos-rebuild switch --flake .#omnixy`。
+- 每次修改后执行 `sudo nixos-rebuild switch --flake "path:$PWD#omnixy"`。

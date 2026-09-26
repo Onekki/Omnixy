@@ -9,7 +9,7 @@ in
   home = {
     inherit userName;
     homeDirectory = "/home/${userName}";
-    stateVersion = "25.05";
+    stateVersion = "26.05";
   };
 
   home.packages = lib.mkIf coreEnabled (with pkgs; [

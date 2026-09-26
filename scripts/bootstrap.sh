@@ -7,6 +7,20 @@ export NIX_CONFIG="$(
   printf '%s\n' "${NIX_CONFIG:-}" "experimental-features = nix-command flakes"
 )"
 
+if ! command -v git >/dev/null 2>&1; then
+  echo "git not found; staging git from nixpkgs..."
+  GIT_BIN_DIR="$(
+    nix shell nixpkgs#git --command bash -c 'dirname "$(command -v git)"' \
+      2>/dev/null || true
+  )"
+  if [ -n "$GIT_BIN_DIR" ] && [ -x "$GIT_BIN_DIR/git" ]; then
+    export PATH="$GIT_BIN_DIR:$PATH"
+  else
+    echo "Could not provision git. Install it first with: nix-shell -p git"
+    exit 1
+  fi
+fi
+
 HOST="${HOST:-omnixy}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 HARDWARE="$ROOT/hosts/$HOST/hardware-configuration.nix"

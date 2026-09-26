@@ -90,7 +90,7 @@ EOF
   fi
 fi
 
-if [ -f "$HARDWARE" ] && ! grep -q "请替换这个文件" "$HARDWARE"; then
+if [ -f "$HARDWARE" ]; then
   echo "Using existing hardware config: $HARDWARE"
 elif [ -f /etc/nixos/hardware-configuration.nix ]; then
   echo "Copying hardware config from /etc/nixos/hardware-configuration.nix..."

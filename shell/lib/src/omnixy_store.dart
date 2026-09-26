@@ -207,14 +207,18 @@ class OmnixyStore {
 
   Map<String, dynamic> defaults() => {
         'system': {
-          'hostname': 'omnixy',
-          'timezone': 'Asia/Shanghai',
+          'hostname': Platform.localHostname,
+          'timezone': 'UTC',
           'locale': 'en_US.UTF-8',
           'networkManager': true,
         },
         'user': {
-          'name': 'onekki',
-          'fullName': 'Onekki',
+          'name': Platform.environment['USER'] ??
+              Platform.environment['USERNAME'] ??
+              'user',
+          'fullName': Platform.environment['USER'] ??
+              Platform.environment['USERNAME'] ??
+              'User',
           'hashedPassword': null,
           'extraGroups': <String>[],
         },

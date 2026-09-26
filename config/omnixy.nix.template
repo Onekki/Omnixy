@@ -1,13 +1,13 @@
 {
   system = {
-    hostname = "omnixy";
-    timezone = "Asia/Shanghai";
-    locale = "en_US.UTF-8";
+    hostname = "@HOSTNAME@";
+    timezone = "@TIMEZONE@";
+    locale = "@LOCALE@";
     networkManager = true;
   };
   user = {
-    name = "onekki";
-    fullName = "Onekki";
+    name = "@USERNAME@";
+    fullName = "@FULLNAME@";
     hashedPassword = null;
     extraGroups = [ ];
   };

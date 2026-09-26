@@ -15,6 +15,32 @@ if [ ! -f "$ROOT/flake.nix" ]; then
   exit 1
 fi
 
+OMNIXY_CONFIG="$ROOT/config/omnixy.nix"
+if [ ! -f "$OMNIXY_CONFIG" ]; then
+  echo "生成 config/omnixy.nix（模板：config/omnixy.nix.template）..."
+  mkdir -p "$(dirname "$OMNIXY_CONFIG")"
+  cp "$ROOT/config/omnixy.nix.template" "$OMNIXY_CONFIG"
+
+  DEFAULT_HOSTNAME="${OMNIXY_HOSTNAME:-$(hostnamectl --static 2>/dev/null || true)}"
+  [ -n "$DEFAULT_HOSTNAME" ] || DEFAULT_HOSTNAME="omnixy"
+  DEFAULT_USER="${OMNIXY_USER:-${SUDO_USER:-user}}"
+  DEFAULT_TIMEZONE="${OMNIXY_TIMEZONE:-$(readlink /etc/localtime 2>/dev/null | sed 's|.*/zoneinfo/||')}"
+  [ -n "$DEFAULT_TIMEZONE" ] || DEFAULT_TIMEZONE="UTC"
+  DEFAULT_LOCALE="${OMNIXY_LOCALE:-en_US.UTF-8}"
+
+  sed -i \
+    -e "s|@HOSTNAME@|$DEFAULT_HOSTNAME|g" \
+    -e "s|@USERNAME@|$DEFAULT_USER|g" \
+    -e "s|@FULLNAME@|$DEFAULT_USER|g" \
+    -e "s|@TIMEZONE@|$DEFAULT_TIMEZONE|g" \
+    -e "s|@LOCALE@|$DEFAULT_LOCALE|g" \
+    "$OMNIXY_CONFIG"
+
+  if [ -n "${SUDO_USER:-}" ]; then
+    chown "$SUDO_USER" "$OMNIXY_CONFIG"
+  fi
+fi
+
 if [ -f "$HARDWARE" ] && ! grep -q "请替换这个文件" "$HARDWARE"; then
   echo "检测到已有硬件配置：$HARDWARE"
 elif [ -f /etc/nixos/hardware-configuration.nix ]; then

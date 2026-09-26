@@ -10,7 +10,7 @@ Omnixy 是一个受 [Omarchy](https://github.com/omacom/omarchy) 启发的 NixOS
 - `modules/*.meta.nix`：模块自描述文件，Omnixy shell 扫描它们自动发现模块。
 - `config/denial/`：声明式的 `session.conf` 与 `outputs.conf` 模板。
 - `config/rime/`：Rime 的 `luna_pinyin_simp` 种子配置。
-- `config/omnixy.nix`：Omnixy shell 生成的结构化 Nix 配置，Nix 模块直接 `import` 它。
+- `config/omnixy.nix.template`：bootstrap 首次生成 `config/omnixy.nix` 用的模板；生成文件不入库，Nix 模块直接 `import` 它。
 - `shell/`：Denial 原生 dashboard 工作区，直接用 Dart 读写配置和调用 Nix CLI，不依赖网页或后端服务。
 
 ## 快速开始
@@ -19,20 +19,20 @@ Omnixy 是一个受 [Omarchy](https://github.com/omacom/omarchy) 启发的 NixOS
 
 1. 安装 NixOS（推荐直接用官方图形安装器，安装时把用户名填成你要用的账号）。
 2. 在已安装的 NixOS 系统里准备好这份仓库（可以通过 git clone 或从 U 盘复制进去）。
-3. 填写主机名、用户名、时区等配置。Denial 原生 dashboard 完成前，直接编辑 `config/omnixy.nix`，Nix 模块直接 `import` 这份 attrset。
+3. 主机名、用户名、时区等配置会在 bootstrap 时从模板生成到 `config/omnixy.nix`。生成前可以用 `OMNIXY_HOSTNAME`、`OMNIXY_USER`、`OMNIXY_TIMEZONE` 覆盖默认值，之后也可以直接编辑生成的文件。
 4. 生成真实硬件配置：
 
    ```bash
    sudo nixos-generate-config
    ```
 
-5. 为用户生成密码哈希并填到 `config/omnixy.nix` 的 `user.hashedPassword`：
+5. 为用户生成密码哈希备用：
 
    ```bash
    mkpasswd -m sha-512
    ```
 
-   也可以保留 `null`：安装时用图形安装器创建同名用户并保留密码，rebuild 后直接用原密码登录，登录后再执行 `passwd` 改密码。
+   bootstrap 生成的配置默认 `hashedPassword = null`：安装时用图形安装器创建同名用户并保留密码，rebuild 后直接用原密码登录，登录后再执行 `passwd` 改密码；想声明式设置，就在 `config/omnixy.nix` 生成后把哈希填进 `user.hashedPassword` 再重建。
 
 6. 一键构建并切换（会自动复制硬件配置、生成 flake.lock、再执行 rebuild）：
 
@@ -104,7 +104,7 @@ Denial 官方 NixOS 模块负责构建 Rust 合成器、锁定的 Flutter 引擎
 .
 ├── flake.nix
 ├── config/
-│   ├── omnixy.nix
+│   ├── omnixy.nix.template
 │   ├── denial/
 │   │   ├── outputs.conf
 │   │   └── session.conf

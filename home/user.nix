@@ -4,6 +4,7 @@ let
   user = manifest.user;
   userName = user.name;
   coreEnabled = builtins.elem "core" manifest.enabledModules;
+  rimeEnabled = builtins.elem "rime" manifest.enabledModules;
 in
 {
   home = {
@@ -32,5 +33,12 @@ in
   programs.git = {
     enable = coreEnabled;
     userName = user.fullName;
+  };
+
+  home.file = lib.mkIf rimeEnabled {
+    ".local/share/fcitx5/rime/default.custom.yaml".source =
+      ../config/rime/default.custom.yaml;
+    ".local/share/fcitx5/rime/luna_pinyin_simp.custom.yaml".source =
+      ../config/rime/luna_pinyin_simp.custom.yaml;
   };
 }

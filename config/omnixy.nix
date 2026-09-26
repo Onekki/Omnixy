@@ -19,8 +19,5 @@
       displayManager = "greetd";
       autologin = false;
     };
-    rime = {
-      overwrite = false;
-    };
   };
 }

@@ -244,7 +244,7 @@ class OmnixyStore {
     final directory = Directory(modulesDir);
     final specs = <ModuleSpec>[];
     if (!await directory.exists()) return specs;
-    await for (final entity in directory.list()) {
+    await for (final entity in directory.list(recursive: true)) {
       if (entity is! File) continue;
       final name = entity.uri.pathSegments.last;
       if (!name.endsWith('.meta.nix')) continue;

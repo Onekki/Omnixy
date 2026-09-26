@@ -63,7 +63,7 @@ cp /etc/nixos/hardware-configuration.nix hosts/omnixy/hardware-configuration.nix
   settings = {
     core = { };
     denial = {
-      displayManager = "sddm";
+      displayManager = "gdm";
       autologin = false;
     };
     rime = {

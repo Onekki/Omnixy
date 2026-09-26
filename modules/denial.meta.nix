@@ -7,8 +7,8 @@
       key = "displayManager";
       label = "显示管理器";
       type = "select";
-      options = [ "sddm" "gdm" "none" ];
-      default = "sddm";
+      options = [ "gdm" "sddm" "none" ];
+      default = "gdm";
     }
     {
       key = "autologin";

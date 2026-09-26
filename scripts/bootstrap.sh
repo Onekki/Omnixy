@@ -15,7 +15,7 @@ if [ ! -f "$ROOT/flake.nix" ]; then
   exit 1
 fi
 
-if ! grep -q "请替换这个文件" "$HARDWARE" 2>/dev/null; then
+if [ -f "$HARDWARE" ] && ! grep -q "请替换这个文件" "$HARDWARE"; then
   echo "检测到已有硬件配置：$HARDWARE"
 elif [ -f /etc/nixos/hardware-configuration.nix ]; then
   echo "从 /etc/nixos/hardware-configuration.nix 复制真实硬件配置..."
@@ -36,7 +36,7 @@ else
   sudo bash scripts/bootstrap.sh
 
 脚本会把 /etc/nixos/hardware-configuration.nix 自动复制到
-hosts/<hostname>/hardware-configuration.nix。
+hosts/<hostname>/hardware-configuration.nix，且不会提交到 git。
 EOF
   exit 1
 fi

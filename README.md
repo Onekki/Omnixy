@@ -5,7 +5,7 @@ Omnixy 是一个受 [Omarchy](https://github.com/omacom/omarchy) 启发的 NixOS
 当前骨架包含：
 
 - `flake.nix`：锁定 `nixpkgs`（默认跟踪 `nixos-unstable`）与 `denial` 输入，并在 flake 顶层配置 `denial.cachix.org` 二进制缓存。
-- `hosts/omnixy/`：主机入口与 `hardware-configuration.nix` 占位文件。
+- `hosts/omnixy/`：主机入口；硬件配置不提交，由 `scripts/bootstrap.sh` 从 `/etc/nixos/hardware-configuration.nix` 复制。
 - `modules/`：Denial 会话、核心工具链、Rime 中文输入法、用户管理模块。
 - `modules/*.meta.nix`：模块自描述文件，Omnixy shell 扫描它们自动发现模块。
 - `config/denial/`：声明式的 `session.conf` 与 `outputs.conf` 模板。
@@ -113,8 +113,7 @@ Denial 官方 NixOS 模块负责构建 Rust 合成器、锁定的 Flutter 引擎
 │       └── luna_pinyin_simp.custom.yaml
 ├── hosts/
 │   └── omnixy/
-│       ├── default.nix
-│       └── hardware-configuration.nix
+│       └── default.nix
 ├── scripts/
 │   └── bootstrap.sh
 └── modules/

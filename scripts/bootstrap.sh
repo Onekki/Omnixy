@@ -17,9 +17,35 @@ fi
 
 OMNIXY_CONFIG="$ROOT/config/omnixy.nix"
 if [ ! -f "$OMNIXY_CONFIG" ]; then
-  echo "生成 config/omnixy.nix（模板：config/omnixy.nix.template）..."
+  echo "生成 config/omnixy.nix..."
   mkdir -p "$(dirname "$OMNIXY_CONFIG")"
-  cp "$ROOT/config/omnixy.nix.template" "$OMNIXY_CONFIG"
+  cat > "$OMNIXY_CONFIG" <<'EOF'
+{
+  system = {
+    hostname = "@HOSTNAME@";
+    timezone = "@TIMEZONE@";
+    locale = "@LOCALE@";
+    networkManager = true;
+  };
+  user = {
+    name = "@USERNAME@";
+    fullName = "@FULLNAME@";
+    hashedPassword = null;
+    extraGroups = [ ];
+  };
+  enabledModules = [ "core" "denial" "rime" ];
+  settings = {
+    core = { };
+    denial = {
+      displayManager = "sddm";
+      autologin = false;
+    };
+    rime = {
+      overwrite = false;
+    };
+  };
+}
+EOF
 
   DEFAULT_HOSTNAME="${OMNIXY_HOSTNAME:-$(hostnamectl --static 2>/dev/null || true)}"
   [ -n "$DEFAULT_HOSTNAME" ] || DEFAULT_HOSTNAME="omnixy"

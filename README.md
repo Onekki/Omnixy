@@ -10,7 +10,7 @@ Omnixy 是一个受 [Omarchy](https://github.com/omacom/omarchy) 启发的 NixOS
 - `modules/*.meta.nix`：模块自描述文件，Omnixy shell 扫描它们自动发现模块。
 - `config/denial/`：声明式的 `session.conf` 与 `outputs.conf` 模板。
 - `config/rime/`：Rime 的 `luna_pinyin_simp` 种子配置。
-- `config/omnixy.nix.template`：bootstrap 首次生成 `config/omnixy.nix` 用的模板；生成文件不入库，Nix 模块直接 `import` 它。
+- `config/omnixy.nix`：bootstrap 首次运行时根据当前机器生成，不入库；Nix 模块直接 `import` 它。
 - `shell/`：Denial 原生 dashboard 工作区，直接用 Dart 读写配置和调用 Nix CLI，不依赖网页或后端服务。
 
 ## 快速开始
@@ -19,7 +19,7 @@ Omnixy 是一个受 [Omarchy](https://github.com/omacom/omarchy) 启发的 NixOS
 
 1. 安装 NixOS（推荐直接用官方图形安装器，安装时把用户名填成你要用的账号）。
 2. 在已安装的 NixOS 系统里准备好这份仓库（可以通过 git clone 或从 U 盘复制进去）。
-3. 主机名、用户名、时区等配置会在 bootstrap 时从模板生成到 `config/omnixy.nix`。生成前可以用 `OMNIXY_HOSTNAME`、`OMNIXY_USER`、`OMNIXY_TIMEZONE` 覆盖默认值，之后也可以直接编辑生成的文件。
+3. 主机名、用户名、时区等配置由 `scripts/bootstrap.sh` 内嵌的默认模板生成到 `config/omnixy.nix`。生成前可以用 `OMNIXY_HOSTNAME`、`OMNIXY_USER`、`OMNIXY_TIMEZONE` 覆盖默认值，之后也可以直接编辑生成的文件。
 4. 生成真实硬件配置：
 
    ```bash
@@ -104,7 +104,7 @@ Denial 官方 NixOS 模块负责构建 Rust 合成器、锁定的 Flutter 引擎
 .
 ├── flake.nix
 ├── config/
-│   ├── omnixy.nix.template
+│   ├── omnixy.nix（bootstrap 生成，不入库）
 │   ├── denial/
 │   │   ├── outputs.conf
 │   │   └── session.conf

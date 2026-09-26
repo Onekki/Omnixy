@@ -1,5 +1,5 @@
 {
-  description = "Omnixy: an Omarchy-flavoured NixOS configuration built on Denial";
+  description = "Omnixy: an NixOS configuration by Denial";
 
   nixConfig = {
     extra-substituters = [ "https://denial.cachix.org" ];
@@ -9,7 +9,6 @@
   };
 
   inputs = {
-    # Omnixy 默认跟踪 unstable，系统软件均为最新版。
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     denial.url = "github:denialwm/denial";
     home-manager.url = "github:nix-community/home-manager";
@@ -32,7 +31,6 @@
       nixosConfigurations = lib.mapAttrs (name: _:
         nixpkgs.lib.nixosSystem {
           inherit system;
-          specialArgs = { inherit inputs; };
           modules = [
             denial.nixosModules.default
             inputs.home-manager.nixosModules.home-manager

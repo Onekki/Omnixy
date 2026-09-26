@@ -202,10 +202,13 @@ class OmnixyStore {
   final String root;
   OmnixyStore(this.root);
 
-  String get configPath => '$root${Platform.pathSeparator}config${Platform.pathSeparator}omnixy.nix';
+  String get host =>
+      Platform.environment['OMNIXY_HOST'] ?? 'omnixy';
+  String get configPath =>
+      '$root${Platform.pathSeparator}hosts${Platform.pathSeparator}$host${Platform.pathSeparator}omnixy.nix';
   String get modulesDir => '$root${Platform.pathSeparator}modules';
   String get moduleDataPath =>
-      '$root${Platform.pathSeparator}data${Platform.pathSeparator}omnixy-modules.nix';
+      '$root${Platform.pathSeparator}lib${Platform.pathSeparator}omnixy-modules.nix';
 
   Map<String, dynamic> defaults() => {
         'system': {
@@ -438,44 +441,26 @@ class OmnixyStore {
 
 String _defaultModuleCode(String id) => '''
 { config, lib, ... }:
-let
-  manifest = import ../config/omnixy.nix;
-  enabled = builtins.elem "$id" (manifest.enabledModules or [ ]);
-in
 {
-  config = lib.mkIf enabled {
-    # 在这里写模块逻辑，例如：
-    # environment.systemPackages = [ pkgs.hello ];
-  };
+  # 在这里写模块逻辑，例如：
+  # environment.systemPackages = [ pkgs.hello ];
 }
 ''';
 
 String _packageModuleCode(String moduleId, List<String> attrPath) {
   final parts = attrPath.map((part) => '"$part"').join(' ');
   return '''
-{ config, lib, pkgs, ... }:
-let
-  manifest = import ../config/omnixy.nix;
-  enabled = builtins.elem "$moduleId" (manifest.enabledModules or [ ]);
-in
+{ pkgs, ... }:
 {
-  config = lib.mkIf enabled {
-    environment.systemPackages = [ (builtins.getAttrFromPath [ $parts ] pkgs) ];
-  };
+  environment.systemPackages = [ (builtins.getAttrFromPath [ $parts ] pkgs) ];
 }
 ''';
 }
 
 String _flakeModuleCode(String moduleId, String flakeInput) => '''
 { config, lib, inputs, ... }:
-let
-  manifest = import ../config/omnixy.nix;
-  enabled = builtins.elem "$moduleId" (manifest.enabledModules or [ ]);
-in
 {
-  config = lib.mkIf enabled {
-    # 示例: imports = lib.mkIf enabled [ inputs.$flakeInput.nixosModules.default ];
-    # 示例: environment.systemPackages = [ inputs.$flakeInput.packages.x86_64-linux.hello ];
-  };
+  # 示例: imports = [ inputs.$flakeInput.nixosModules.default ];
+  # 示例: environment.systemPackages = [ inputs.$flakeInput.packages.x86_64-linux.hello ];
 }
 ''';

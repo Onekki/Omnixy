@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
+
 HOST="${HOST:-omnixy}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 HARDWARE="$ROOT/hosts/$HOST/hardware-configuration.nix"

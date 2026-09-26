@@ -24,9 +24,12 @@ Omnixy 是一套以 NixOS 为底座、以 Denial 为桌面、以 Flutter 原生�
 2. 获取仓库：
 
    ```bash
-   git clone https://github.com/Onekki/Omnixy.git
+   # 最小化 NixOS 没有 git，用 Nix 临时准备一个
+   nix-shell -p git --run "git clone https://github.com/Onekki/Omnixy.git"
    cd Omnixy
    ```
+
+   也可以用 U 盘把仓库复制进系统；之后 `scripts/setup.sh` 会自动准备 git 并处理后续步骤。
 
 3. 一键安装新机器：
 

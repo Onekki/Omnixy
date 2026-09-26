@@ -5,22 +5,7 @@ let
 in
 {
   config = lib.mkIf enabled {
-    environment.systemPackages = with pkgs; [
-      bat
-      btop
-      curl
-      fd
-      git
-      jq
-      kitty
-      neovim
-      ripgrep
-      unzip
-    ];
-
     programs.dconf.enable = true;
-    programs.fish.enable = true;
-    programs.starship.enable = true;
 
     services.gvfs.enable = true;
     services.udisks2.enable = true;

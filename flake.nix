@@ -12,10 +12,11 @@
     # Omnixy 默认跟踪 unstable，系统软件均为最新版。
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     denial.url = "github:denialwm/denial";
+    home-manager.url = "github:nix-community/home-manager";
   };
 
   outputs =
-    { nixpkgs, denial, ... }:
+    inputs@{ nixpkgs, denial, ... }:
     let
       # Denial currently publishes only x86_64-linux Nix outputs.
       system = "x86_64-linux";
@@ -23,8 +24,10 @@
     {
       nixosConfigurations.omnixy = nixpkgs.lib.nixosSystem {
         inherit system;
+        specialArgs = { inherit inputs; };
         modules = [
           denial.nixosModules.default
+          inputs.home-manager.nixosModules.home-manager
           ./hosts/omnixy
         ];
       };

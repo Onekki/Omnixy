@@ -4,6 +4,12 @@ let
   enabledModules = manifest.enabledModules or [ "core" "denial" "rime" ];
 in
 {
+  home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
+    users.${manifest.user.name or "onekki"} = import ../../home/user.nix;
+  };
+
   imports =
     [
       ./hardware-configuration.nix

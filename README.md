@@ -5,6 +5,7 @@
 Omnixy 是一套以 NixOS 为底座、以 Denial 为桌面、以 Flutter 原生应用为配置界面的模块化配置仓库。
 
 - NixOS flake：`nixpkgs` 默认跟踪 `nixos-unstable`，通过 `flake.lock` 锁定版本。
+- Home Manager：用户级软件包与 dotfiles（fish、kitty、neovim、git）在 `home/user.nix` 管理，系统配置与 Denial 原生设置界面保留。
 - Denial：Flutter-native Wayland 合成器，官方 NixOS 模块负责合成器、session、portal、Xwayland、polkit 等。
 - 配置：`config/omnixy.nix` 是提交在仓库里的默认结构化 Nix attrset，机器专属值由你修改后提交。
 - 原生 Shell：`shell/` 是 Denial custom shell 工作区，用 Dart 读写配置、调用 nix 命令，不依赖浏览器。

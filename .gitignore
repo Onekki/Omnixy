@@ -2,5 +2,3 @@
 /result-*
 /.direnv/
 __pycache__/
-hosts/*/hardware-configuration.nix
-config/omnixy.nix

@@ -92,11 +92,12 @@ Future<List<Map<String, String>>> searchFlakes(String query) async {
 }
 
 Future<String> rebuild(String repoRoot) async {
-  final script =
-      '$repoRoot${Platform.pathSeparator}scripts${Platform.pathSeparator}bootstrap.sh';
   final result = await Process.run(
     'sudo',
-    ['bash', script],
+    ['nixos-rebuild', 'switch', '--flake', '$repoRoot#omnixy'],
+    environment: {
+      'NIX_CONFIG': 'experimental-features = nix-command flakes',
+    },
     stdoutEncoding: utf8,
     stderrEncoding: utf8,
   );

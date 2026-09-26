@@ -26,6 +26,9 @@
       );
     in
     {
+      nixosModules.default = ./modules/nixos.nix;
+      homeManagerModules.default = ./modules/home.nix;
+
       nixosConfigurations = lib.mapAttrs (name: _:
         nixpkgs.lib.nixosSystem {
           inherit system;

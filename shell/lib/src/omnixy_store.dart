@@ -204,6 +204,8 @@ class OmnixyStore {
 
   String get configPath => '$root${Platform.pathSeparator}config${Platform.pathSeparator}omnixy.nix';
   String get modulesDir => '$root${Platform.pathSeparator}modules';
+  String get moduleDataPath =>
+      '$root${Platform.pathSeparator}data${Platform.pathSeparator}omnixy-modules.nix';
 
   Map<String, dynamic> defaults() => {
         'system': {
@@ -240,26 +242,36 @@ class OmnixyStore {
     await file.writeAsString('${toNix(config, 0)}\n');
   }
 
+  Future<Map<String, dynamic>> _readModuleData() async {
+    final file = File(moduleDataPath);
+    if (!await file.exists()) return <String, dynamic>{};
+    final parsed = parseNix(await file.readAsString()) as Map<String, dynamic>;
+    return Map<String, dynamic>.from(parsed);
+  }
+
+  Future<void> _writeModuleData(Map<String, dynamic> data) async {
+    final file = File(moduleDataPath);
+    await file.parent.create(recursive: true);
+    await file.writeAsString('${toNix(data, 0)}\n');
+  }
+
   Future<List<ModuleSpec>> discoverModules() async {
-    final directory = Directory(modulesDir);
+    final moduleData = File(moduleDataPath);
     final specs = <ModuleSpec>[];
-    if (!await directory.exists()) return specs;
-    await for (final entity in directory.list(recursive: true)) {
-      if (entity is! File) continue;
-      final name = entity.uri.pathSegments.last;
-      if (!name.endsWith('.meta.nix')) continue;
-      final id = name.substring(0, name.length - '.meta.nix'.length);
-      final parsed = parseNix(await entity.readAsString()) as Map<String, dynamic>;
+    if (!await moduleData.exists()) return specs;
+    final parsed = parseNix(await moduleData.readAsString()) as Map<String, dynamic>;
+    parsed.forEach((id, value) {
+      final module = value is Map ? Map<String, dynamic>.from(value) : <String, dynamic>{};
       specs.add(ModuleSpec(
         id: id,
-        name: parsed['name'] as String? ?? id,
-        description: parsed['description'] as String? ?? '',
-        builtin: parsed['builtin'] as bool? ?? false,
-        settings: (parsed['settings'] as List<dynamic>? ?? const [])
+        name: module['name'] as String? ?? id,
+        description: module['description'] as String? ?? '',
+        builtin: module['builtin'] as bool? ?? false,
+        settings: (module['settings'] as List<dynamic>? ?? const [])
             .whereType<Map<String, dynamic>>()
             .toList(),
       ));
-    }
+    });
     specs.sort((a, b) => a.id.compareTo(b.id));
     return specs;
   }
@@ -272,9 +284,8 @@ class OmnixyStore {
   }) async {
     final moduleFile =
         File('$modulesDir${Platform.pathSeparator}$id.nix');
-    final metaFile =
-        File('$modulesDir${Platform.pathSeparator}$id.meta.nix');
-    if (await moduleFile.exists() || await metaFile.exists()) {
+    final data = await _readModuleData();
+    if (await moduleFile.exists() || data.containsKey(id)) {
       throw StateError('模块 $id 已存在');
     }
 
@@ -282,14 +293,13 @@ class OmnixyStore {
         ? _defaultModuleCode(id)
         : code;
     await moduleFile.writeAsString(body);
-    await metaFile.writeAsString(
-      '{\n'
-      '  name = ${_nixString(name)};\n'
-      '  description = ${_nixString(description)};\n'
-      '  builtin = false;\n'
-      '  settings = [ ];\n'
-      '}\n',
-    );
+    data[id] = {
+      'name': name,
+      'description': description,
+      'builtin': false,
+      'settings': <dynamic>[],
+    };
+    await _writeModuleData(data);
 
     final config = await readConfig();
     final enabled = (config['enabledModules'] as List<dynamic>)
@@ -314,10 +324,11 @@ class OmnixyStore {
 
     final moduleFile =
         File('$modulesDir${Platform.pathSeparator}$id.nix');
-    final metaFile =
-        File('$modulesDir${Platform.pathSeparator}$id.meta.nix');
     if (await moduleFile.exists()) await moduleFile.delete();
-    if (await metaFile.exists()) await metaFile.delete();
+
+    final data = await _readModuleData();
+    data.remove(id);
+    await _writeModuleData(data);
 
     final config = await readConfig();
     config['enabledModules'] = (config['enabledModules'] as List<dynamic>)

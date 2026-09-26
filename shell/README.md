@@ -8,7 +8,7 @@ Omnixy 的 Denial 原生界面工作区，入口与 Denial 官方
 
 现在已经包含：
 
-- `lib/src/omnixy_store.dart`：Nix 子集解析器、序列化器、读写 `config/omnixy.nix`、扫描 `modules/*.meta.nix`。
+- `lib/src/omnixy_store.dart`：Nix 子集解析器、序列化器、读写 `config/omnixy.nix`、读取 `data/omnixy-modules.nix`。
 - `lib/src/nix_helper.dart`：`nix search nixpkgs`、`nix registry list`、`nixos-rebuild` 调用。
 - `lib/dashboard.dart`：系统/用户/模块开关/软件包搜索/保存/构建的基础界面。
 

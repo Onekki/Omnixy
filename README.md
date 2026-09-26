@@ -6,6 +6,7 @@ Omnixy 是一套以 NixOS 为底座、以 Denial 为桌面、以 Flutter 原生�
 
 - NixOS flake：`nixpkgs` 默认跟踪 `nixos-unstable`，通过 `flake.lock` 锁定版本。
 - 模块化入口：flake 暴露 `nixosModules.default` 与 `homeManagerModules.default`，`modules/nixos.nix` 和 `modules/home.nix` 是各自入口。
+- 模块数据：`data/omnixy-modules.nix` 是模块登记表（对应 nixarchy 的 `data/apps.nix`），shell 读取它生成模块列表。
 - 服务类模块：Denial 与 Rime 位于 `modules/services/`，由 `modules/services/default.nix` 聚合。
 - Home Manager：用户级软件包与 dotfiles（fish、kitty、neovim、git、Rime 种子配置）在 `modules/home.nix` 管理，系统配置与 Denial 原生设置界面保留。
 - Denial：Flutter-native Wayland 合成器，官方 NixOS 模块负责合成器、session、portal、Xwayland、polkit 等。
@@ -120,6 +121,6 @@ sudo nixos-rebuild switch --flake "path:$PWD#<机器名>"
 ### 7. 日常修改
 
 - 改系统/用户/模块开关：编辑 `config/omnixy.nix` 或使用 Denial 原生 dashboard；
-- 添加模块：写 `modules/<id>.nix` + `modules/<id>.meta.nix`，shell 会自动发现；
+- 添加模块：在 `data/omnixy-modules.nix` 登记，并写 `modules/<id>.nix`，shell 会自动发现；
 - 搜索 nixpkgs/flake：在 dashboard 里搜索并生成 `pkg-<名称>` / `flake-<名称>` 模块；
 - 每次修改后执行 `sudo nixos-rebuild switch --flake "path:$PWD#omnixy"`。

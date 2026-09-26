@@ -26,6 +26,7 @@ in
   };
 
   programs.dconf.enable = true;
+  programs.fish.enable = true;
 
   services.gvfs.enable = true;
   services.udisks2.enable = true;

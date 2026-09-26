@@ -66,6 +66,8 @@ sudo OMNIXY_HOSTNAME=myhost OMNIXY_USER=me bash scripts/bootstrap.sh
 
 首次在终端运行时会交互式询问主机名、用户名、时区、镜像；通过环境变量传入则可以完全跳过提问。
 
+bootstrap 的终端提示使用英文，避免还没配置中文字体的 TTY 显示乱码；进入 Denial 桌面后的界面仍是中文。
+
 ### 4. 构建系统
 
 ```bash

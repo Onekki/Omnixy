@@ -6,18 +6,18 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 HARDWARE="$ROOT/hosts/$HOST/hardware-configuration.nix"
 
 if [ "$EUID" -ne 0 ]; then
-  echo "请用 sudo 运行：sudo bash scripts/bootstrap.sh"
+  echo "Please run with sudo: sudo bash scripts/bootstrap.sh"
   exit 1
 fi
 
 if [ ! -f "$ROOT/flake.nix" ]; then
-  echo "没有找到 flake.nix，请确认在 Omnixy 仓库根目录执行。"
+  echo "flake.nix not found. Run this from the Omnixy repository root."
   exit 1
 fi
 
 OMNIXY_CONFIG="$ROOT/config/omnixy.nix"
 if [ ! -f "$OMNIXY_CONFIG" ]; then
-  echo "生成 config/omnixy.nix..."
+  echo "Generating config/omnixy.nix..."
   mkdir -p "$(dirname "$OMNIXY_CONFIG")"
   cat > "$OMNIXY_CONFIG" <<'EOF'
 {
@@ -63,13 +63,13 @@ EOF
   DEFAULT_MIRROR="${OMNIXY_MIRROR:-$DEFAULT_MIRROR}"
 
   if [ -t 0 ]; then
-    read -r -p "主机名 [$DEFAULT_HOSTNAME]: " INPUT
+    read -r -p "Hostname [$DEFAULT_HOSTNAME]: " INPUT
     [ -n "$INPUT" ] && DEFAULT_HOSTNAME="$INPUT"
-    read -r -p "用户名 [$DEFAULT_USER]: " INPUT
+    read -r -p "Username [$DEFAULT_USER]: " INPUT
     [ -n "$INPUT" ] && DEFAULT_USER="$INPUT"
-    read -r -p "时区 [$DEFAULT_TIMEZONE]: " INPUT
+    read -r -p "Timezone [$DEFAULT_TIMEZONE]: " INPUT
     [ -n "$INPUT" ] && DEFAULT_TIMEZONE="$INPUT"
-    read -r -p "软件源镜像 (china/global) [$DEFAULT_MIRROR]: " INPUT
+    read -r -p "Mirror (china/global) [$DEFAULT_MIRROR]: " INPUT
     [ -n "$INPUT" ] && DEFAULT_MIRROR="$INPUT"
   fi
 
@@ -88,16 +88,16 @@ EOF
 fi
 
 if [ -f "$HARDWARE" ] && ! grep -q "请替换这个文件" "$HARDWARE"; then
-  echo "检测到已有硬件配置：$HARDWARE"
+  echo "Using existing hardware config: $HARDWARE"
 elif [ -f /etc/nixos/hardware-configuration.nix ]; then
-  echo "从 /etc/nixos/hardware-configuration.nix 复制真实硬件配置..."
+  echo "Copying hardware config from /etc/nixos/hardware-configuration.nix..."
   mkdir -p "$(dirname "$HARDWARE")"
   cp /etc/nixos/hardware-configuration.nix "$HARDWARE"
   if [ -n "${SUDO_USER:-}" ]; then
     chown "$SUDO_USER" "$HARDWARE"
   fi
 else
-  echo "生成硬件配置..."
+  echo "Generating hardware config..."
   TMP_HW="$(mktemp -d)"
   if nixos-generate-config --dir "$TMP_HW" >/dev/null 2>&1 &&
     [ -f "$TMP_HW/hardware-configuration.nix" ]; then
@@ -116,12 +116,12 @@ fi
 cd "$ROOT"
 
 if [ ! -f "$ROOT/flake.lock" ]; then
-  echo "首次构建，先生成 flake.lock..."
+  echo "Generating flake.lock..."
   nix flake update
   if [ -n "${SUDO_USER:-}" ]; then
     chown "$SUDO_USER" "$ROOT/flake.lock"
   fi
 fi
 
-echo "开始构建系统：nixos-rebuild switch --flake .#$HOST"
+echo "Building system: nixos-rebuild switch --flake .#$HOST"
 nixos-rebuild switch --flake ".#$HOST" --accept-flake-config

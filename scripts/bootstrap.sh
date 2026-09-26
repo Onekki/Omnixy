@@ -3,6 +3,9 @@ set -euo pipefail
 
 export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
+export NIX_CONFIG="$(
+  printf '%s\n' "${NIX_CONFIG:-}" "experimental-features = nix-command flakes"
+)"
 
 HOST="${HOST:-omnixy}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

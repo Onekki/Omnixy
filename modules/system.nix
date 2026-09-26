@@ -6,6 +6,7 @@ let
   mirror = system.mirror or "global";
 in
 {
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.substituters = lib.mkIf (mirror == "china") (lib.mkBefore [
     "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store"
   ]);

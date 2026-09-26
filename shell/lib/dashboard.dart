@@ -16,6 +16,7 @@ class _OmnixyDashboardSceneState extends State<OmnixyDashboardScene> {
   final _hostname = TextEditingController();
   final _timezone = TextEditingController();
   final _locale = TextEditingController();
+  final _mirror = TextEditingController();
   final _userName = TextEditingController();
   final _fullName = TextEditingController();
   final _password = TextEditingController();
@@ -69,6 +70,7 @@ class _OmnixyDashboardSceneState extends State<OmnixyDashboardScene> {
         _hostname.text = (config['system'] as Map<String, dynamic>)['hostname'] as String? ?? '';
         _timezone.text = (config['system'] as Map<String, dynamic>)['timezone'] as String? ?? '';
         _locale.text = (config['system'] as Map<String, dynamic>)['locale'] as String? ?? '';
+        _mirror.text = (config['system'] as Map<String, dynamic>)['mirror'] as String? ?? 'global';
         _userName.text = (config['user'] as Map<String, dynamic>)['name'] as String? ?? '';
         _fullName.text = (config['user'] as Map<String, dynamic>)['fullName'] as String? ?? '';
         _password.text =
@@ -97,6 +99,7 @@ class _OmnixyDashboardSceneState extends State<OmnixyDashboardScene> {
         'hostname': _hostname.text.trim(),
         'timezone': _timezone.text.trim(),
         'locale': _locale.text.trim(),
+        'mirror': _mirror.text.trim().isEmpty ? 'global' : _mirror.text.trim(),
         'networkManager':
             (_config?['system'] as Map<String, dynamic>?)?.containsKey('networkManager') == true
                 ? (_config!['system'] as Map<String, dynamic>)['networkManager']
@@ -312,6 +315,7 @@ class _OmnixyDashboardSceneState extends State<OmnixyDashboardScene> {
                       _textField(_hostname, '主机名'),
                       _textField(_timezone, '时区'),
                       _textField(_locale, '语言区域'),
+                      _textField(_mirror, '软件源镜像 (china/global)'),
                     ]),
                     _section('用户', [
                       _textField(_userName, '用户名'),

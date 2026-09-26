@@ -26,6 +26,7 @@ if [ ! -f "$OMNIXY_CONFIG" ]; then
     timezone = "@TIMEZONE@";
     locale = "@LOCALE@";
     networkManager = true;
+    mirror = "@MIRROR@";
   };
   user = {
     name = "@USERNAME@";
@@ -53,6 +54,24 @@ EOF
   DEFAULT_TIMEZONE="${OMNIXY_TIMEZONE:-$(readlink /etc/localtime 2>/dev/null | sed 's|.*/zoneinfo/||')}"
   [ -n "$DEFAULT_TIMEZONE" ] || DEFAULT_TIMEZONE="UTC"
   DEFAULT_LOCALE="${OMNIXY_LOCALE:-en_US.UTF-8}"
+  DEFAULT_MIRROR="global"
+  case "$DEFAULT_TIMEZONE" in
+    Asia/Shanghai|Asia/Hong_Kong|Asia/Taipei|Asia/Macau)
+      DEFAULT_MIRROR="china"
+      ;;
+  esac
+  DEFAULT_MIRROR="${OMNIXY_MIRROR:-$DEFAULT_MIRROR}"
+
+  if [ -t 0 ]; then
+    read -r -p "主机名 [$DEFAULT_HOSTNAME]: " INPUT
+    [ -n "$INPUT" ] && DEFAULT_HOSTNAME="$INPUT"
+    read -r -p "用户名 [$DEFAULT_USER]: " INPUT
+    [ -n "$INPUT" ] && DEFAULT_USER="$INPUT"
+    read -r -p "时区 [$DEFAULT_TIMEZONE]: " INPUT
+    [ -n "$INPUT" ] && DEFAULT_TIMEZONE="$INPUT"
+    read -r -p "软件源镜像 (china/global) [$DEFAULT_MIRROR]: " INPUT
+    [ -n "$INPUT" ] && DEFAULT_MIRROR="$INPUT"
+  fi
 
   sed -i \
     -e "s|@HOSTNAME@|$DEFAULT_HOSTNAME|g" \
@@ -60,6 +79,7 @@ EOF
     -e "s|@FULLNAME@|$DEFAULT_USER|g" \
     -e "s|@TIMEZONE@|$DEFAULT_TIMEZONE|g" \
     -e "s|@LOCALE@|$DEFAULT_LOCALE|g" \
+    -e "s|@MIRROR@|$DEFAULT_MIRROR|g" \
     "$OMNIXY_CONFIG"
 
   if [ -n "${SUDO_USER:-}" ]; then
@@ -77,20 +97,20 @@ elif [ -f /etc/nixos/hardware-configuration.nix ]; then
     chown "$SUDO_USER" "$HARDWARE"
   fi
 else
-  cat <<'EOF'
-还没有真实硬件配置。请先在已安装好的 NixOS 系统里运行：
-
-  sudo nixos-generate-config
-  
-
-然后重新执行
-
-  sudo bash scripts/bootstrap.sh
-
-脚本会把 /etc/nixos/hardware-configuration.nix 自动复制到
-hosts/<hostname>/hardware-configuration.nix，且不会提交到 git。
-EOF
-  exit 1
+  echo "生成硬件配置..."
+  TMP_HW="$(mktemp -d)"
+  if nixos-generate-config --dir "$TMP_HW" >/dev/null 2>&1 &&
+    [ -f "$TMP_HW/hardware-configuration.nix" ]; then
+    cp "$TMP_HW/hardware-configuration.nix" "$HARDWARE"
+    rm -rf "$TMP_HW"
+  else
+    rm -rf "$TMP_HW"
+    nixos-generate-config
+    cp /etc/nixos/hardware-configuration.nix "$HARDWARE"
+  fi
+  if [ -n "${SUDO_USER:-}" ]; then
+    chown "$SUDO_USER" "$HARDWARE"
+  fi
 fi
 
 cd "$ROOT"

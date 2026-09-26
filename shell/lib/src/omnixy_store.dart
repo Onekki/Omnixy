@@ -211,6 +211,7 @@ class OmnixyStore {
           'timezone': 'UTC',
           'locale': 'en_US.UTF-8',
           'networkManager': true,
+          'mirror': 'global',
         },
         'user': {
           'name': Platform.environment['USER'] ??
@@ -373,6 +374,7 @@ class OmnixyStore {
         'locale': system['locale'] as String? ?? defaults['system']['locale'],
         'networkManager':
             system['networkManager'] as bool? ?? defaults['system']['networkManager'],
+        'mirror': system['mirror'] as String? ?? defaults['system']['mirror'],
       },
       'user': {
         'name': user['name'] as String? ?? defaults['user']['name'],

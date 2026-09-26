@@ -54,6 +54,9 @@ bootstrap 首次运行时会用内嵌默认模板生成 `config/omnixy.nix`，�
 | 用户名 | 执行 sudo 的当前用户 | `OMNIXY_USER` |
 | 时区 | `/etc/localtime` 符号链接 | `OMNIXY_TIMEZONE` |
 | locale | `en_US.UTF-8` | `OMNIXY_LOCALE` |
+| 软件源镜像 | 默认按时区推断：`Asia/Shanghai` 等中国时区用 `china`，否则 `global` | `OMNIXY_MIRROR` |
+
+镜像只按 timezone 或 `OMNIXY_MIRROR` 决定，不按 locale；locale 是语言偏好，和网络源位置无关。
 
 例如：
 
@@ -61,13 +64,9 @@ bootstrap 首次运行时会用内嵌默认模板生成 `config/omnixy.nix`，�
 sudo OMNIXY_HOSTNAME=myhost OMNIXY_USER=me bash scripts/bootstrap.sh
 ```
 
-### 4. 生成硬件配置
+首次在终端运行时会交互式询问主机名、用户名、时区、镜像；通过环境变量传入则可以完全跳过提问。
 
-```bash
-sudo nixos-generate-config
-```
-
-### 5. 构建系统
+### 4. 构建系统
 
 ```bash
 sudo bash scripts/bootstrap.sh
@@ -76,13 +75,13 @@ sudo bash scripts/bootstrap.sh
 这个脚本会依次完成：
 
 1. 如果没有 `config/omnixy.nix`，根据当前机器和覆盖变量生成它；
-2. 如果 `hosts/omnixy/hardware-configuration.nix` 不存在，就从 `/etc/nixos/hardware-configuration.nix` 复制；
+2. 如果 `hosts/omnixy/hardware-configuration.nix` 不存在，自动运行 `nixos-generate-config` 或从 `/etc/nixos/hardware-configuration.nix` 复制；
 3. 如果还没有 `flake.lock`，先执行 `nix flake update`；
 4. 执行 `nixos-rebuild switch --flake .#omnixy`。
 
 注意：Denial 缓存未命中时需要从源码构建 Flutter engine，官方建议准备至少 64 GiB 的临时存储空间。
 
-### 6. 重启登录
+### 5. 重启登录
 
 重启后在 SDDM 登录界面选择 **Denial**。
 
@@ -94,7 +93,7 @@ mkpasswd -m sha-512
 
 然后把结果填进 `config/omnixy.nix` 的 `user.hashedPassword`，再重新构建。
 
-### 7. 日常修改
+### 6. 日常修改
 
 机器生成后的 `config/omnixy.nix` 是主要编辑入口，分为四块：
 
@@ -109,7 +108,7 @@ mkpasswd -m sha-512
 sudo bash scripts/bootstrap.sh
 ```
 
-### 8. 添加和删除模块
+### 7. 添加和删除模块
 
 一个模块只需要两个文件：
 
@@ -120,7 +119,7 @@ modules/<id>.meta.nix
 
 `<id>.meta.nix` 描述名称、说明和设置项；`<id>.nix` 实现模块逻辑。shell 会扫描 meta 自动发现模块。原生界面以搜索为主：模块列表可以按名称/说明过滤，nixpkgs 和 flake 搜索结果点一下直接生成模块；不需要手动填写模块 ID 和代码。自定义模块也有删除按钮，内置模块只能停用，不能删除。
 
-### 9. 原生配置界面
+### 8. 原生配置界面
 
 `shell/` 是 Denial 原生 dashboard 工作区，目标是在 Denial 启动器里直接打开配置界面，界面内可以：
 
@@ -133,7 +132,7 @@ modules/<id>.meta.nix
 
 当前 `shell/` 已经包含 Dart 的配置读写、Nix 解析/序列化和 nix 命令调用代码；由于需要 Denial 锁定的 Flutter 工具链，最终编译和桌面集成在 NixOS 上完成。
 
-### 10. 更新
+### 9. 更新
 
 ```bash
 cd Omnixy

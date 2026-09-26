@@ -19,7 +19,9 @@ in
       hardware.graphics.enable = true;
     })
 
-    (lib.mkIf (enabled && displayManager != "none") {
+    (lib.mkIf (
+      enabled && (displayManager == "gdm" || displayManager == "sddm")
+    ) {
       services.xserver.enable = true;
 
       services.displayManager = {
@@ -29,6 +31,18 @@ in
         autoLogin = lib.mkIf autologin {
           enable = true;
           user = userName;
+        };
+      };
+    })
+
+    (lib.mkIf (enabled && displayManager == "greetd") {
+      services.greetd = {
+        enable = true;
+        settings = {
+          default_session = {
+            command = "${config.programs.denial.package}/bin/denial-session --start-locked";
+            user = userName;
+          };
         };
       };
     })

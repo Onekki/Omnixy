@@ -63,7 +63,7 @@ cp /etc/nixos/hardware-configuration.nix hosts/omnixy/hardware-configuration.nix
   settings = {
     core = { };
     denial = {
-      displayManager = "gdm";
+      displayManager = "greetd";
       autologin = false;
     };
     rime = {
@@ -92,7 +92,7 @@ sudo nixos-rebuild switch --flake "path:$PWD#omnixy"
 
 ### 6. 重启登录
 
-重启后在 SDDM 登录界面选择 **Denial**。密码可以先用安装器用户密码，登录后再 `passwd` 修改，或把哈希填进 `config/omnixy.nix` 的 `user.hashedPassword`。
+重启后 greetd 自动拉起 Denial，并以 Denial 原生锁屏作为入口，用用户密码解锁。密码可以先用安装器用户密码，登录后再 `passwd` 修改，或把哈希填进 `config/omnixy.nix` 的 `user.hashedPassword`。
 
 ### 7. 日常修改
 

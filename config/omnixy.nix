@@ -16,7 +16,7 @@
   settings = {
     core = { };
     denial = {
-      displayManager = "gdm";
+      displayManager = "greetd";
       autologin = false;
     };
     rime = {

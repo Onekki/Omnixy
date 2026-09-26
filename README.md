@@ -28,29 +28,23 @@ Omnixy 是一套以 NixOS 为底座、以 Denial 为桌面、以 Flutter 原生�
    cd Omnixy
    ```
 
-3. 生成硬件配置：
+3. 一键安装新机器：
 
    ```bash
-   sudo nixos-generate-config
-   cp /etc/nixos/hardware-configuration.nix hosts/omnixy/hardware-configuration.nix
+   sudo bash scripts/setup.sh
    ```
+
+   setup 会自动：准备 git、生成 `hosts/omnixy/hardware-configuration.nix`、生成 `flake.lock`，然后执行 `nixos-rebuild switch`。
 
 4. 按需修改机器配置：
 
    - `manifest.nix`：用户名、主机名、时区、locale、镜像等变量，其他用户改这里最快。
    - `hosts/omnixy/default.nix`：用户名、用户组、Home Manager 用户、bootloader。
-   - `modules/core.nix`：主机名、时区、locale、镜像、基础服务。
+   - `modules/core.nix`：基础服务，主机名/时区/locale/镜像走 `manifest.nix`。
    - `modules/denial.nix`：Denial 与 greetd 锁屏入口。
    - `modules/rime/`：fcitx5 + Rime 系统侧配置。
 
-5. 全新系统首次构建：
-
-   ```bash
-   sudo NIX_CONFIG="experimental-features = nix-command flakes" \
-     nixos-rebuild switch --flake "path:$PWD#omnixy"
-   ```
-
-   以后直接：
+5. 日常重建：
 
    ```bash
    sudo nixos-rebuild switch --flake "path:$PWD#omnixy"

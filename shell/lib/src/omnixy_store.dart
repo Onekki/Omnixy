@@ -338,6 +338,25 @@ class OmnixyStore {
     );
   }
 
+  Future<ModuleSpec> createFlakeModule({
+    required String flakeInput,
+    required String url,
+    required String description,
+  }) async {
+    final moduleId = 'flake-$flakeInput';
+    final modules = await discoverModules();
+    if (modules.any((module) => module.id == moduleId)) {
+      throw StateError('模块 $moduleId 已存在');
+    }
+    await _addFlakeInput(flakeInput, url);
+    return createModule(
+      id: moduleId,
+      name: 'Flake: $flakeInput',
+      description: description,
+      code: _flakeModuleCode(moduleId, flakeInput),
+    );
+  }
+
   Map<String, dynamic> _normalize(Map<String, dynamic> raw) {
     final system = Map<String, dynamic>.from(
         raw['system'] is Map ? raw['system'] as Map : const {});
@@ -368,6 +387,39 @@ class OmnixyStore {
           .toList(),
       'settings': settings,
     };
+  }
+
+  Future<void> _addFlakeInput(String input, String url) async {
+    final flakeFile = File('$root${Platform.pathSeparator}flake.nix');
+    var text = await flakeFile.readAsString();
+    final exists = RegExp(
+      '^\\s*${RegExp.escape(input)}\\.url\\s*=',
+      multiLine: true,
+    ).hasMatch(text);
+    if (exists) throw StateError('flake 输入 $input 已经存在');
+
+    if (!text.contains('specialArgs')) {
+      final oldOutputs = '  outputs =\n    { nixpkgs, denial, ... }:';
+      final newOutputs = '  outputs =\n    inputs@{ nixpkgs, denial, ... }:';
+      final oldSystem = '        inherit system;';
+      final newSystem =
+          '        inherit system;\n        specialArgs = { inherit inputs; };';
+      if (!text.contains(oldOutputs) || !text.contains(oldSystem)) {
+        throw StateError('无法识别的 flake.nix 结构，请手动添加输入');
+      }
+      text = text.replaceFirst(oldOutputs, newOutputs);
+      text = text.replaceFirst(oldSystem, newSystem);
+    }
+
+    final marker = 'denial.url = "github:denialwm/denial";';
+    if (!text.contains(marker)) {
+      throw StateError('无法定位 flake 输入列表，请手动添加输入');
+    }
+    text = text.replaceFirst(
+      marker,
+      '$marker\n    $input.url = "$url";',
+    );
+    await flakeFile.writeAsString(text);
   }
 }
 
@@ -400,3 +452,17 @@ in
 }
 ''';
 }
+
+String _flakeModuleCode(String moduleId, String flakeInput) => '''
+{ config, lib, inputs, ... }:
+let
+  manifest = import ../config/omnixy.nix;
+  enabled = builtins.elem "$moduleId" (manifest.enabledModules or [ ]);
+in
+{
+  config = lib.mkIf enabled {
+    # 示例: imports = lib.mkIf enabled [ inputs.$flakeInput.nixosModules.default ];
+    # 示例: environment.systemPackages = [ inputs.$flakeInput.packages.x86_64-linux.hello ];
+  };
+}
+''';

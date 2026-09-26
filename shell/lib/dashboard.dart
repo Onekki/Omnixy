@@ -21,16 +21,15 @@ class _OmnixyDashboardSceneState extends State<OmnixyDashboardScene> {
   final _password = TextEditingController();
   final _groups = TextEditingController();
   final _searchQuery = TextEditingController();
-  final _newModuleId = TextEditingController();
-  final _newModuleName = TextEditingController();
-  final _newModuleDesc = TextEditingController();
-  final _newModuleCode = TextEditingController();
+  final _moduleFilter = TextEditingController();
+  final _flakeQuery = TextEditingController();
 
   Map<String, dynamic>? _config;
   List<ModuleSpec> _modules = [];
   Map<String, bool> _enabled = {};
   Map<String, Map<String, dynamic>> _moduleValues = {};
   List<PackageHit> _searchResults = [];
+  List<Map<String, String>> _flakeResults = [];
   bool _loading = true;
   bool _working = false;
   String _status = '';
@@ -176,35 +175,73 @@ class _OmnixyDashboardSceneState extends State<OmnixyDashboardScene> {
     }
   }
 
-  Future<void> _createModule() async {
-    final id = _newModuleId.text.trim();
-    final name = _newModuleName.text.trim();
-    if (id.isEmpty || name.isEmpty) {
-      setState(() => _status = '模块 ID 和名称不能为空');
+  Future<void> _searchFlakes() async {
+    final query = _flakeQuery.text.trim();
+    if (query.isEmpty) return;
+
+    if (query.contains('github:') ||
+        query.contains('git+') ||
+        query.contains('://')) {
+      final name = _deriveFlakeName(query);
+      await _createFlakeModule(
+        name: name,
+        url: query,
+        description: name,
+      );
       return;
     }
+
     setState(() {
       _working = true;
-      _status = '创建模块...';
+      _status = '搜索 flake 注册表...';
     });
     try {
-      await _store.createModule(
-        id: id,
-        name: name,
-        description: _newModuleDesc.text.trim(),
-        code: _newModuleCode.text,
+      final results = await searchFlakes(query);
+      setState(() {
+        _flakeResults = results;
+        _status = '找到 ${results.length} 个 flake';
+      });
+    } catch (error) {
+      setState(() => _status = '搜索失败：$error');
+    } finally {
+      setState(() => _working = false);
+    }
+  }
+
+  Future<void> _createFlakeModule({
+    required String name,
+    required String url,
+    required String description,
+  }) async {
+    setState(() {
+      _working = true;
+      _status = '创建 flake 模块...';
+    });
+    try {
+      await _store.createFlakeModule(
+        flakeInput: name,
+        url: url,
+        description: description,
       );
-      _newModuleId.clear();
-      _newModuleName.clear();
-      _newModuleDesc.clear();
-      _newModuleCode.clear();
       await _load();
-      setState(() => _status = '模块 $id 已创建并启用');
+      setState(() => _status = 'flake 模块 $name 已创建并启用');
     } catch (error) {
       setState(() => _status = '创建失败：$error');
     } finally {
       setState(() => _working = false);
     }
+  }
+
+  String _deriveFlakeName(String url) {
+    final base = url.split('?').first.split('#').first;
+    final last = base.split('/').last.split(':').last;
+    var name = last
+        .replaceAll(RegExp(r'[^a-z0-9-]+'), '-')
+        .toLowerCase()
+        .replaceAll(RegExp(r'^-+|-+$'), '');
+    if (name.isEmpty) name = 'flake';
+    if (RegExp(r'^[0-9]').hasMatch(name)) name = 'f$name';
+    return name;
   }
 
   Future<void> _deleteModule(String id) async {
@@ -281,7 +318,8 @@ class _OmnixyDashboardSceneState extends State<OmnixyDashboardScene> {
                       _textField(_groups, '附加组（逗号分隔）'),
                     ]),
                     _section('模块', [
-                      for (final module in _modules)
+                      _textField(_moduleFilter, '搜索模块'),
+                      for (final module in _modules.where(_moduleMatches))
                         Row(
                           children: [
                             Expanded(
@@ -305,27 +343,39 @@ class _OmnixyDashboardSceneState extends State<OmnixyDashboardScene> {
                           ],
                         ),
                     ]),
-                    _section('添加模块', [
+                    _section('Flake 模块搜索', [
                       Row(
                         children: [
                           Expanded(
-                            child: _textField(_newModuleId, '模块 ID'),
+                            child: _textField(
+                              _flakeQuery,
+                              '搜索注册表或输入 flake URL',
+                            ),
                           ),
                           const SizedBox(width: 8),
-                          Expanded(
-                            child: _textField(_newModuleName, '模块名称'),
+                          ElevatedButton(
+                            onPressed: _working ? null : _searchFlakes,
+                            child: const Text('搜索'),
                           ),
                         ],
                       ),
-                      _textField(_newModuleDesc, '模块说明'),
-                      _textField(_newModuleCode, '模块 Nix 代码（可留空）'),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: ElevatedButton(
-                          onPressed: _working ? null : _createModule,
-                          child: const Text('创建模块'),
+                      for (final flake in _flakeResults)
+                        ListTile(
+                          dense: true,
+                          title: Text(flake['name'] ?? ''),
+                          subtitle: Text(flake['url'] ?? ''),
+                          trailing: IconButton(
+                            tooltip: '创建模块',
+                            icon: const Icon(Icons.add_box_outlined),
+                            onPressed: _working
+                                ? null
+                                : () => _createFlakeModule(
+                                      name: flake['name'] ?? '',
+                                      url: flake['url'] ?? '',
+                                      description: flake['name'] ?? '',
+                                    ),
+                          ),
                         ),
-                      ),
                     ]),
                     _section('nixpkgs 搜索', [
                       Row(
@@ -415,6 +465,14 @@ class _OmnixyDashboardSceneState extends State<OmnixyDashboardScene> {
         ),
       ),
     );
+  }
+
+  bool _moduleMatches(ModuleSpec module) {
+    final query = _moduleFilter.text.trim().toLowerCase();
+    if (query.isEmpty) return true;
+    return module.id.toLowerCase().contains(query) ||
+        module.name.toLowerCase().contains(query) ||
+        module.description.toLowerCase().contains(query);
   }
 
   Widget _textField(TextEditingController controller, String label) {

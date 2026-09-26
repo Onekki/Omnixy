@@ -28,6 +28,17 @@ in
   programs.starship.enable = true;
   programs.kitty.enable = true;
 
+  programs.fish.functions.nrs = {
+    description = "Rebuild the current Omnixy host";
+    body = ''
+      sudo nixos-rebuild switch --flake "path:$PWD#omnixy"
+    '';
+  };
+
+  home.shellAliases = {
+    nrs = "sudo nixos-rebuild switch --flake \"path:$PWD#omnixy\"";
+  };
+
   programs.git = {
     enable = true;
     userName = manifest.fullName;

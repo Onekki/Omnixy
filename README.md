@@ -47,8 +47,10 @@ Omnixy 是一套以 NixOS 为底座、以 Denial 为桌面、以 Flutter 原生�
 5. 日常重建：
 
    ```bash
-   sudo nixos-rebuild switch --flake "path:$PWD#omnixy"
+   nrs
    ```
+
+   `nrs` 是 Home Manager 生成的快捷方式（bash/zsh alias，fish 函数），等价于上面的 rebuild 命令。
 
 6. 多台机器：`hosts/` 下每个目录自动生成一个配置，构建时把 `#omnixy` 换成对应机器名。
 7. 重启后 greetd 拉起 Denial，用 Denial 原生锁屏解锁。

@@ -7,7 +7,7 @@ Omnixy 是一套以 NixOS 为底座、以 Denial 为桌面、以 Flutter 原生�
 - NixOS flake：`nixpkgs` 默认跟踪 `nixos-unstable`，通过 `flake.lock` 锁定版本。
 - 模块化入口：flake 暴露 `nixosModules.default` 与 `homeManagerModules.default`，`modules/nixos.nix` 和 `modules/home.nix` 是各自入口。
 - 模块数据：`data/omnixy-modules.nix` 是模块登记表（对应 nixarchy 的 `data/apps.nix`），shell 读取它生成模块列表。
-- 服务类模块：Denial 与 Rime 位于 `modules/services/`，由 `modules/services/default.nix` 聚合。
+- 服务类模块：Denial 与 Rime 各一个文件，位于 `modules/services/`，入口直接引用。
 - Home Manager：用户级软件包与 dotfiles（fish、kitty、neovim、git、Rime 种子配置、fcitx5 profile/快捷键）在 `modules/home.nix` 管理，系统配置与 Denial 原生设置界面保留。
 - Denial：Flutter-native Wayland 合成器，官方 NixOS 模块负责合成器、session、portal、Xwayland、polkit 等。
 - 配置：`config/omnixy.nix` 是提交在仓库里的默认结构化 Nix attrset，机器专属值由你修改后提交。

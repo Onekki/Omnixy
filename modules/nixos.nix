@@ -6,6 +6,7 @@
     ./system.nix
     ./users.nix
     ./core.nix
-    ./services
+    ./services/denial.nix
+    ./services/rime.nix
   ];
 }

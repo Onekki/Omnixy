@@ -45,6 +45,26 @@ Future<List<PackageHit>> searchNixpkgs(String query) async {
   return hits.take(80).toList();
 }
 
+String normalizeFlakeUrl(String input) {
+  final trimmed = input.trim();
+  final githubMatch = RegExp(
+    r'^https?://github\.com/([^/?#]+)/([^/?#]+)',
+  ).firstMatch(trimmed);
+  if (githubMatch == null) return trimmed;
+
+  final owner = githubMatch.group(1)!;
+  var repo = githubMatch.group(2)!.replaceFirst(RegExp(r'\.git$'), '');
+  final tail = trimmed.substring(githubMatch.end).split('?').first;
+  final tailParts =
+      tail.split('/').where((part) => part.isNotEmpty).toList();
+  if (tailParts.isNotEmpty &&
+      tailParts.first == 'tree' &&
+      tailParts.length >= 2) {
+    return 'github:$owner/$repo/${tailParts[1]}';
+  }
+  return 'github:$owner/$repo';
+}
+
 Future<List<Map<String, String>>> searchFlakes(String query) async {
   final result = await Process.run(
     'nix',

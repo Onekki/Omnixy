@@ -179,13 +179,15 @@ class _OmnixyDashboardSceneState extends State<OmnixyDashboardScene> {
     final query = _flakeQuery.text.trim();
     if (query.isEmpty) return;
 
-    if (query.contains('github:') ||
+    if (query.contains('github.com') ||
+        query.contains('github:') ||
         query.contains('git+') ||
         query.contains('://')) {
-      final name = _deriveFlakeName(query);
+      final normalizedUrl = normalizeFlakeUrl(query);
+      final name = _deriveFlakeName(normalizedUrl);
       await _createFlakeModule(
         name: name,
-        url: query,
+        url: normalizedUrl,
         description: name,
       );
       return;

@@ -128,7 +128,7 @@ modules/<id>.meta.nix
 - 搜索和开关模块；
 - 删除自定义模块；
 - 搜索 nixpkgs 软件包；
-- 调用 `nix registry list` 搜索 flake；
+- 调用 `nix registry list` 搜索 flake，也支持直接粘贴 `https://github.com/owner/repo`；
 - 保存并触发系统重建。
 
 当前 `shell/` 已经包含 Dart 的配置读写、Nix 解析/序列化和 nix 命令调用代码；由于需要 Denial 锁定的 Flutter 工具链，最终编译和桌面集成在 NixOS 上完成。

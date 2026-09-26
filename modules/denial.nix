@@ -16,11 +16,6 @@ in
         polkitAgent.enable = true;
       };
 
-      environment.etc."denial/session.conf".source =
-        ../config/denial/session.conf;
-      environment.etc."denial/outputs.conf".source =
-        ../config/denial/outputs.conf;
-
       hardware.graphics.enable = true;
     })
 

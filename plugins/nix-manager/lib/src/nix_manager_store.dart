@@ -198,17 +198,16 @@ String toNix(dynamic value, int indent) {
   throw NixParseException('cannot serialize ${value.runtimeType}');
 }
 
-class OmnixyStore {
+class NixManagerStore {
   final String root;
-  OmnixyStore(this.root);
+  NixManagerStore(this.root);
 
-  String get host =>
-      Platform.environment['OMNIXY_HOST'] ?? 'omnixy';
+  String get host => Platform.environment['NIX_MANAGER_HOST'] ?? 'omnixy';
   String get configPath =>
-      '$root${Platform.pathSeparator}hosts${Platform.pathSeparator}$host${Platform.pathSeparator}omnixy.nix';
+      '$root${Platform.pathSeparator}hosts${Platform.pathSeparator}$host${Platform.pathSeparator}default.nix';
   String get modulesDir => '$root${Platform.pathSeparator}modules';
   String get moduleDataPath =>
-      '$root${Platform.pathSeparator}lib${Platform.pathSeparator}omnixy-modules.nix';
+      '$root${Platform.pathSeparator}plugins${Platform.pathSeparator}nix-manager${Platform.pathSeparator}modules.nix';
 
   Map<String, dynamic> defaults() => {
         'system': {

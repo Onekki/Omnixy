@@ -1,13 +1,16 @@
 { pkgs, ... }:
+let
+  manifest = import ../../manifest.nix;
+in
 {
   imports = [
     ./hardware-configuration.nix
     ../../modules/nixos.nix
   ];
 
-  users.users.onekki = {
+  users.users.${manifest.username} = {
     isNormalUser = true;
-    description = "Onekki";
+    description = manifest.fullName;
     extraGroups = [ "wheel" "audio" "video" ];
     hashedPassword = null;
     shell = pkgs.fish;
@@ -16,7 +19,7 @@
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;
-    users.onekki = import ../../modules/home.nix;
+    users.${manifest.username} = import ../../modules/home.nix;
   };
 
   boot.loader.systemd-boot.enable = true;

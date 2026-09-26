@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 
 import 'src/nix_helper.dart';
-import 'src/omnixy_store.dart';
+import 'src/nix_manager_store.dart';
 
-class OmnixyDashboardScene extends StatefulWidget {
+class NixManagerDashboardScene extends StatefulWidget {
   final String repoRoot;
-  const OmnixyDashboardScene({super.key, required this.repoRoot});
+  const NixManagerDashboardScene({super.key, required this.repoRoot});
 
   @override
-  State<OmnixyDashboardScene> createState() => _OmnixyDashboardSceneState();
+  State<NixManagerDashboardScene> createState() =>
+      _NixManagerDashboardSceneState();
 }
 
-class _OmnixyDashboardSceneState extends State<OmnixyDashboardScene> {
-  late final OmnixyStore _store;
+class _NixManagerDashboardSceneState extends State<NixManagerDashboardScene> {
+  late final NixManagerStore _store;
   final _hostname = TextEditingController();
   final _timezone = TextEditingController();
   final _locale = TextEditingController();
@@ -38,7 +39,7 @@ class _OmnixyDashboardSceneState extends State<OmnixyDashboardScene> {
   @override
   void initState() {
     super.initState();
-    _store = OmnixyStore(widget.repoRoot);
+    _store = NixManagerStore(widget.repoRoot);
     _load();
   }
 

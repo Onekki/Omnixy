@@ -1,5 +1,5 @@
-name: omnixy_shell
-description: Omnixy custom Denial shell and dashboard.
+name: nix_manager
+description: Nix Manager custom Denial shell and dashboard.
 publish_to: 'none'
 version: 0.1.0
 

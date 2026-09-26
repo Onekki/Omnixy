@@ -1,25 +1,28 @@
 { lib, pkgs, ... }:
+let
+  manifest = import ../manifest.nix;
+in
 {
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.substituters = lib.mkBefore [
     "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store"
   ];
 
-  networking.hostName = "omnixy";
-  networking.networkmanager.enable = true;
+  networking.hostName = manifest.hostname;
+  networking.networkmanager.enable = manifest.networkManager;
 
-  time.timeZone = "Asia/Shanghai";
-  i18n.defaultLocale = "en_US.UTF-8";
+  time.timeZone = manifest.timezone;
+  i18n.defaultLocale = manifest.locale;
   i18n.extraLocaleSettings = {
-    LC_ADDRESS = "en_US.UTF-8";
-    LC_IDENTIFICATION = "en_US.UTF-8";
-    LC_MEASUREMENT = "en_US.UTF-8";
-    LC_MONETARY = "en_US.UTF-8";
-    LC_NAME = "en_US.UTF-8";
-    LC_NUMERIC = "en_US.UTF-8";
-    LC_PAPER = "en_US.UTF-8";
-    LC_TELEPHONE = "en_US.UTF-8";
-    LC_TIME = "en_US.UTF-8";
+    LC_ADDRESS = manifest.locale;
+    LC_IDENTIFICATION = manifest.locale;
+    LC_MEASUREMENT = manifest.locale;
+    LC_MONETARY = manifest.locale;
+    LC_NAME = manifest.locale;
+    LC_NUMERIC = manifest.locale;
+    LC_PAPER = manifest.locale;
+    LC_TELEPHONE = manifest.locale;
+    LC_TIME = manifest.locale;
   };
 
   programs.dconf.enable = true;

@@ -92,9 +92,10 @@ Future<List<Map<String, String>>> searchFlakes(String query) async {
 }
 
 Future<String> rebuild(String repoRoot) async {
+  final host = Platform.environment['NIX_MANAGER_HOST'] ?? 'omnixy';
   final result = await Process.run(
     'sudo',
-    ['nixos-rebuild', 'switch', '--flake', 'path:$repoRoot#omnixy'],
+    ['nixos-rebuild', 'switch', '--flake', 'path:$repoRoot#$host'],
     environment: {
       'NIX_CONFIG': 'experimental-features = nix-command flakes',
     },

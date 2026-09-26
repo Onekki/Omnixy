@@ -1,4 +1,7 @@
 { config, ... }:
+let
+  manifest = import ../manifest.nix;
+in
 {
   programs.denial.enable = true;
   hardware.graphics.enable = true;
@@ -8,7 +11,7 @@
     settings = {
       default_session = {
         command = "${config.programs.denial.package}/bin/denial-session --start-locked";
-        user = "onekki";
+        user = manifest.username;
       };
     };
   };

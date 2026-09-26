@@ -263,6 +263,81 @@ class OmnixyStore {
     return specs;
   }
 
+  Future<ModuleSpec> createModule({
+    required String id,
+    required String name,
+    required String description,
+    String? code,
+  }) async {
+    final moduleFile =
+        File('$modulesDir${Platform.pathSeparator}$id.nix');
+    final metaFile =
+        File('$modulesDir${Platform.pathSeparator}$id.meta.nix');
+    if (await moduleFile.exists() || await metaFile.exists()) {
+      throw StateError('模块 $id 已存在');
+    }
+
+    final body = (code == null || code.trim().isEmpty)
+        ? _defaultModuleCode(id)
+        : code;
+    await moduleFile.writeAsString(body);
+    await metaFile.writeAsString(
+      '{\n'
+      '  name = ${_nixString(name)};\n'
+      '  description = ${_nixString(description)};\n'
+      '  builtin = false;\n'
+      '  settings = [ ];\n'
+      '}\n',
+    );
+
+    final config = await readConfig();
+    final enabled = (config['enabledModules'] as List<dynamic>)
+        .map((item) => item.toString())
+        .toList();
+    if (!enabled.contains(id)) enabled.add(id);
+    config['enabledModules'] = enabled;
+    await writeConfig(config);
+
+    final modules = await discoverModules();
+    return modules.firstWhere((module) => module.id == id);
+  }
+
+  Future<void> deleteModule(String id) async {
+    final modules = await discoverModules();
+    final matches =
+        modules.where((module) => module.id == id).toList();
+    if (matches.isEmpty) throw StateError('模块 $id 不存在');
+    if (matches.first.builtin) {
+      throw StateError('内置模块不能删除，只能停用');
+    }
+
+    final moduleFile =
+        File('$modulesDir${Platform.pathSeparator}$id.nix');
+    final metaFile =
+        File('$modulesDir${Platform.pathSeparator}$id.meta.nix');
+    if (await moduleFile.exists()) await moduleFile.delete();
+    if (await metaFile.exists()) await metaFile.delete();
+
+    final config = await readConfig();
+    config['enabledModules'] = (config['enabledModules'] as List<dynamic>)
+        .where((item) => item.toString() != id)
+        .toList();
+    (config['settings'] as Map<String, dynamic>).remove(id);
+    await writeConfig(config);
+  }
+
+  Future<ModuleSpec> createPackageModule(String attr) async {
+    final attrPath = attr.split('.');
+    final moduleId =
+        'pkg-${attr.toLowerCase().replaceAll(RegExp(r'[^a-z0-9-]+'), '-')}';
+    return createModule(
+      id: moduleId,
+      name: attr,
+      description: '安装 nixpkgs 软件包 $attr',
+      code: _packageModuleCode(moduleId, attrPath),
+    );
+  }
+
   Map<String, dynamic> _normalize(Map<String, dynamic> raw) {
     final system = Map<String, dynamic>.from(
         raw['system'] is Map ? raw['system'] as Map : const {});
@@ -294,4 +369,34 @@ class OmnixyStore {
       'settings': settings,
     };
   }
+}
+
+String _defaultModuleCode(String id) => '''
+{ config, lib, ... }:
+let
+  manifest = import ../config/omnixy.nix;
+  enabled = builtins.elem "$id" (manifest.enabledModules or [ ]);
+in
+{
+  config = lib.mkIf enabled {
+    # 在这里写模块逻辑，例如：
+    # environment.systemPackages = [ pkgs.hello ];
+  };
+}
+''';
+
+String _packageModuleCode(String moduleId, List<String> attrPath) {
+  final parts = attrPath.map((part) => '"$part"').join(' ');
+  return '''
+{ config, lib, pkgs, ... }:
+let
+  manifest = import ../config/omnixy.nix;
+  enabled = builtins.elem "$moduleId" (manifest.enabledModules or [ ]);
+in
+{
+  config = lib.mkIf enabled {
+    environment.systemPackages = [ (builtins.getAttrFromPath [ $parts ] pkgs) ];
+  };
+}
+''';
 }

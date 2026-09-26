@@ -118,7 +118,7 @@ modules/<id>.nix
 modules/<id>.meta.nix
 ```
 
-`<id>.meta.nix` 描述名称、说明和设置项；`<id>.nix` 实现模块逻辑。shell 会扫描 meta 自动发现模块，把它加进 `enabledModules` 即可启用。内置模块只能停用，自定义模块可以在原生界面里删除。
+`<id>.meta.nix` 描述名称、说明和设置项；`<id>.nix` 实现模块逻辑。shell 会扫描 meta 自动发现模块，并在原生界面里提供“添加模块”和“删除模块”按钮，不再需要手动创建或删除文件；手动写这两个文件的效果也一样。内置模块只能停用，不能删除。
 
 ### 9. 原生配置界面
 
@@ -126,6 +126,7 @@ modules/<id>.meta.nix
 
 - 编辑系统与用户设置；
 - 开关模块；
+- 添加和删除自定义模块；
 - 搜索 nixpkgs 软件包；
 - 调用 `nix registry list` 搜索 flake；
 - 保存并触发系统重建。

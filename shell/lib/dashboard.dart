@@ -21,6 +21,10 @@ class _OmnixyDashboardSceneState extends State<OmnixyDashboardScene> {
   final _password = TextEditingController();
   final _groups = TextEditingController();
   final _searchQuery = TextEditingController();
+  final _newModuleId = TextEditingController();
+  final _newModuleName = TextEditingController();
+  final _newModuleDesc = TextEditingController();
+  final _newModuleCode = TextEditingController();
 
   Map<String, dynamic>? _config;
   List<ModuleSpec> _modules = [];
@@ -156,6 +160,88 @@ class _OmnixyDashboardSceneState extends State<OmnixyDashboardScene> {
     }
   }
 
+  Future<void> _createPackageModule(PackageHit hit) async {
+    setState(() {
+      _working = true;
+      _status = '创建软件包模块...';
+    });
+    try {
+      await _store.createPackageModule(hit.attr);
+      await _load();
+      setState(() => _status = '模块 ${hit.attr} 已创建并启用');
+    } catch (error) {
+      setState(() => _status = '创建失败：$error');
+    } finally {
+      setState(() => _working = false);
+    }
+  }
+
+  Future<void> _createModule() async {
+    final id = _newModuleId.text.trim();
+    final name = _newModuleName.text.trim();
+    if (id.isEmpty || name.isEmpty) {
+      setState(() => _status = '模块 ID 和名称不能为空');
+      return;
+    }
+    setState(() {
+      _working = true;
+      _status = '创建模块...';
+    });
+    try {
+      await _store.createModule(
+        id: id,
+        name: name,
+        description: _newModuleDesc.text.trim(),
+        code: _newModuleCode.text,
+      );
+      _newModuleId.clear();
+      _newModuleName.clear();
+      _newModuleDesc.clear();
+      _newModuleCode.clear();
+      await _load();
+      setState(() => _status = '模块 $id 已创建并启用');
+    } catch (error) {
+      setState(() => _status = '创建失败：$error');
+    } finally {
+      setState(() => _working = false);
+    }
+  }
+
+  Future<void> _deleteModule(String id) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('删除模块'),
+        content: Text('确定删除模块 $id？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    setState(() {
+      _working = true;
+      _status = '删除中...';
+    });
+    try {
+      await _store.deleteModule(id);
+      await _load();
+      setState(() => _status = '模块 $id 已删除');
+    } catch (error) {
+      setState(() => _status = '删除失败：$error');
+    } finally {
+      setState(() => _working = false);
+    }
+  }
+
   Future<void> _rebuild() async {
     setState(() {
       _working = true;
@@ -196,13 +282,50 @@ class _OmnixyDashboardSceneState extends State<OmnixyDashboardScene> {
                     ]),
                     _section('模块', [
                       for (final module in _modules)
-                        SwitchListTile(
-                          title: Text(module.name),
-                          subtitle: Text(module.description),
-                          value: _enabled[module.id] ?? false,
-                          onChanged: (value) =>
-                              setState(() => _enabled[module.id] = value),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: SwitchListTile(
+                                title: Text(module.name),
+                                subtitle: Text(module.description),
+                                value: _enabled[module.id] ?? false,
+                                onChanged: (value) => setState(
+                                  () => _enabled[module.id] = value,
+                                ),
+                              ),
+                            ),
+                            if (!module.builtin)
+                              IconButton(
+                                tooltip: '删除模块',
+                                icon: const Icon(Icons.delete_outline),
+                                onPressed: _working
+                                    ? null
+                                    : () => _deleteModule(module.id),
+                              ),
+                          ],
                         ),
+                    ]),
+                    _section('添加模块', [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _textField(_newModuleId, '模块 ID'),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _textField(_newModuleName, '模块名称'),
+                          ),
+                        ],
+                      ),
+                      _textField(_newModuleDesc, '模块说明'),
+                      _textField(_newModuleCode, '模块 Nix 代码（可留空）'),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: ElevatedButton(
+                          onPressed: _working ? null : _createModule,
+                          child: const Text('创建模块'),
+                        ),
+                      ),
                     ]),
                     _section('nixpkgs 搜索', [
                       Row(
@@ -222,7 +345,19 @@ class _OmnixyDashboardSceneState extends State<OmnixyDashboardScene> {
                           dense: true,
                           title: Text('${hit.name} ${hit.version}'),
                           subtitle: Text(hit.description),
-                          trailing: Text(hit.attr),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(hit.attr),
+                              IconButton(
+                                tooltip: '创建模块',
+                                icon: const Icon(Icons.add_box_outlined),
+                                onPressed: _working
+                                    ? null
+                                    : () => _createPackageModule(hit),
+                              ),
+                            ],
+                          ),
                         ),
                     ]),
                     const SizedBox(height: 12),

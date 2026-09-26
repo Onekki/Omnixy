@@ -9,28 +9,13 @@ in
       bat
       btop
       curl
-      eza
       fd
-      ffmpeg
-      file
-      fzf
-      gh
       git
-      git-lfs
-      gum
-      htop
       jq
       kitty
-      lazygit
       neovim
       ripgrep
-      tmux
-      tree
       unzip
-      wget
-      yq-go
-      zip
-      zoxide
     ];
 
     programs.dconf.enable = true;

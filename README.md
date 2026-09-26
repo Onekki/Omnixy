@@ -15,7 +15,7 @@ Omnixy 是一套以 NixOS 为底座、以 Denial 为桌面、以 Flutter 原生�
 
 - Denial 桌面：默认 SDDM 登录，可选 GDM 或不用 display manager；支持自动登录；`session.conf` 与 `outputs.conf` 声明式管理。
 - Rime 中文输入：fcitx5 的 Wayland 前端 + 朙月拼音简化字；默认中文输入，`Ctrl+Space` 切换中英文，`Ctrl+Shift+Space` 切换输入法。
-- 核心工具：fish、kitty、neovim、git、gh、ripgrep、fd、fzf、eza、zoxide、tmux、gum、lazygit 等；pipewire、中文字体、dconf、GVfs、udisks2 已随核心模块启用。
+- 核心工具：kitty、fish、neovim、git、curl、jq、bat、fd、ripgrep、btop、unzip；pipewire、中文字体、dconf、GVfs、udisks2 已随核心模块启用。
 - 系统与用户：主机名、时区、locale、NetworkManager、用户账号、密码哈希、附加用户组。
 - 模块机制：每个模块由 `modules/<id>.nix` 和 `modules/<id>.meta.nix` 自描述；`config/omnixy.nix` 的 `enabledModules` 决定动态导入哪些模块，shell 启动时扫描 meta 自动发现。
 

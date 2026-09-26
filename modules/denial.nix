@@ -1,11 +1,11 @@
 { config, lib, ... }:
 let
   manifest = import ../config/omnixy.nix;
-  enabled = builtins.elem "denial" (manifest.enabledModules or [ ]);
-  denial = manifest.settings.denial or { };
-  displayManager = denial.displayManager or "gdm";
-  autologin = denial.autologin or false;
-  userName = (manifest.user or { }).name or "omnixy";
+  enabled = builtins.elem "denial" manifest.enabledModules;
+  denial = manifest.settings.denial;
+  displayManager = denial.displayManager;
+  autologin = denial.autologin;
+  userName = manifest.user.name;
 in
 {
   config = lib.mkMerge [

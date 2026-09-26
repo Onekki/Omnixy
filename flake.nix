@@ -20,16 +20,22 @@
     let
       # Denial currently publishes only x86_64-linux Nix outputs.
       system = "x86_64-linux";
+      lib = nixpkgs.lib;
+      hosts = lib.filterAttrs (_: type: type == "directory") (
+        builtins.readDir ./hosts
+      );
     in
     {
-      nixosConfigurations.omnixy = nixpkgs.lib.nixosSystem {
-        inherit system;
-        specialArgs = { inherit inputs; };
-        modules = [
-          denial.nixosModules.default
-          inputs.home-manager.nixosModules.home-manager
-          ./hosts/omnixy
-        ];
-      };
+      nixosConfigurations = lib.mapAttrs (name: _:
+        nixpkgs.lib.nixosSystem {
+          inherit system;
+          specialArgs = { inherit inputs; };
+          modules = [
+            denial.nixosModules.default
+            inputs.home-manager.nixosModules.home-manager
+            ./hosts/${name}
+          ];
+        }
+      ) hosts;
     };
 }

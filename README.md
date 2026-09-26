@@ -91,6 +91,29 @@ sudo NIX_CONFIG="experimental-features = nix-command flakes" \
 sudo nixos-rebuild switch --flake "path:$PWD#omnixy"
 ```
 
+### 5.1 多台机器
+
+`hosts/` 下每个目录对应一台机器，flake 会自动生成同名配置。新增机器只需：
+
+```bash
+mkdir -p hosts/<机器名>
+cat > hosts/<机器名>/default.nix <<'EOF'
+{ ... }:
+{
+  imports = [
+    ./hardware-configuration.nix
+    ../default.nix
+  ];
+}
+EOF
+```
+
+然后把该机器的 `hardware-configuration.nix` 放进去，构建时用：
+
+```bash
+sudo nixos-rebuild switch --flake "path:$PWD#<机器名>"
+```
+
 ### 6. 重启登录
 
 重启后 greetd 自动拉起 Denial，并以 Denial 原生锁屏作为入口，用用户密码解锁。密码可以先用安装器用户密码，登录后再 `passwd` 修改，或把哈希填进 `config/omnixy.nix` 的 `user.hashedPassword`。

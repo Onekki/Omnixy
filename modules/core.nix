@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 let
   manifest = import ../config/omnixy.nix;
-  enabled = builtins.elem "core" (manifest.enabledModules or [ ]);
+  enabled = builtins.elem "core" manifest.enabledModules;
 in
 {
   config = lib.mkIf enabled {

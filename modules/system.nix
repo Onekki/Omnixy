@@ -1,9 +1,9 @@
 { config, lib, ... }:
 let
   manifest = import ../config/omnixy.nix;
-  system = manifest.system or { };
-  locale = system.locale or "en_US.UTF-8";
-  mirror = system.mirror or "global";
+  system = manifest.system;
+  locale = system.locale;
+  mirror = system.mirror;
 in
 {
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -11,9 +11,9 @@ in
     "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store"
   ]);
 
-  networking.hostName = system.hostname or "omnixy";
-  networking.networkmanager.enable = system.networkManager or true;
-  time.timeZone = system.timezone or "Asia/Shanghai";
+  networking.hostName = system.hostname;
+  networking.networkmanager.enable = system.networkManager;
+  time.timeZone = system.timezone;
   i18n.defaultLocale = locale;
   i18n.extraLocaleSettings = {
     LC_ADDRESS = locale;

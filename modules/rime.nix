@@ -1,10 +1,10 @@
 { config, lib, pkgs, ... }:
 let
   manifest = import ../config/omnixy.nix;
-  enabled = builtins.elem "rime" (manifest.enabledModules or [ ]);
-  rime = manifest.settings.rime or { };
-  overwrite = rime.overwrite or false;
-  user = (manifest.user or { }).name or "omnixy";
+  enabled = builtins.elem "rime" manifest.enabledModules;
+  rime = manifest.settings.rime;
+  overwrite = rime.overwrite;
+  user = manifest.user.name;
 in
 {
   config = lib.mkIf enabled {

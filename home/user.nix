@@ -1,9 +1,9 @@
 { config, lib, pkgs, ... }:
 let
   manifest = import ../config/omnixy.nix;
-  user = manifest.user or { };
-  userName = user.name or "onekki";
-  coreEnabled = builtins.elem "core" (manifest.enabledModules or [ ]);
+  user = manifest.user;
+  userName = user.name;
+  coreEnabled = builtins.elem "core" manifest.enabledModules;
 in
 {
   home = {
@@ -31,6 +31,6 @@ in
 
   programs.git = {
     enable = coreEnabled;
-    userName = user.fullName or "";
+    userName = user.fullName;
   };
 }

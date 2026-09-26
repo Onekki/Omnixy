@@ -1,8 +1,8 @@
 { config, lib, pkgs, ... }:
 let
   manifest = import ../config/omnixy.nix;
-  user = manifest.user or { };
-  name = user.name or "omnixy";
+  user = manifest.user;
+  name = user.name;
 in
 {
   config = lib.mkIf (name != "") {
@@ -17,9 +17,9 @@ in
 
     users.users.${name} = {
       isNormalUser = true;
-      description = user.fullName or "Omnixy";
-      extraGroups = [ "audio" "video" "wheel" ] ++ (user.extraGroups or [ ]);
-      hashedPassword = user.hashedPassword or null;
+      description = user.fullName;
+      extraGroups = [ "audio" "video" "wheel" ] ++ user.extraGroups;
+      hashedPassword = user.hashedPassword;
       shell = pkgs.fish;
     };
   };

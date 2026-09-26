@@ -1,10 +1,40 @@
-{ ... }:
+{ pkgs, ... }:
+let
+  rimeYaml = name: text: pkgs.writeText name text;
+in
 {
   home.file = {
     ".local/share/fcitx5/rime/default.custom.yaml".source =
-      ./config/default.custom.yaml;
+      rimeYaml "default.custom.yaml" ''
+        patch:
+          schema_list:
+            - schema: luna_pinyin_simp
+      '';
     ".local/share/fcitx5/rime/luna_pinyin_simp.custom.yaml".source =
-      ./config/luna_pinyin_simp.custom.yaml;
+      rimeYaml "luna_pinyin_simp.custom.yaml" ''
+        patch:
+          switches:
+            - name: ascii_mode
+              reset: 0
+              states: ["中文", "西文"]
+            - name: full_shape
+              reset: 0
+              states: ["半角", "全角"]
+            - name: simplification
+              reset: 1
+              states: ["漢字", "汉字"]
+            - name: ascii_punct
+              reset: 0
+              states: ["。，", "．，"]
+          engine:
+            filters:
+              - simplifier
+              - uniquifier
+          ascii_composer:
+            switch_key:
+              Shift_L: commit_code
+              Shift_R: inline_ascii
+      '';
     ".config/fcitx5/profile".text = ''
       [Groups/0]
       Name=Default

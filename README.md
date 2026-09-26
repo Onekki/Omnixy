@@ -9,7 +9,7 @@ Omnixy 是一套以 NixOS 为底座、以 Denial 为桌面、以 Flutter 原生�
 - `hosts/<machine>/default.nix`：每台机器的用户、Home Manager、bootloader 和硬件配置。
 - `modules/`：一个模块一个文件，或者一个目录（`default.nix` 入口）。`modules/nixos.nix` 是系统入口，聚合 `core`、`denial`、`rime`。
 - `modules/home.nix`：Home Manager 入口，管理用户软件包、fish、kitty、git、Rime 与 fcitx5 的用户配置。
-- `modules/rime/home.nix`：Rime/fcitx5 的用户文件配置，随 Rime 模块走。
+- `modules/rime/home.nix`：Rime/fcitx5 的用户文件配置（YAML/INI 由 Nix 生成），随 Rime 模块走。
 - `plugins/nix-manager/`：Denial 原生设置界面工作区（Nix Manager）。
 
 ## 为什么
